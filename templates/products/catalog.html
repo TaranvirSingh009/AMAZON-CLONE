@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar filters -->
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Categories</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{{ url_for('products.catalog') }}" 
+                       class="list-group-item list-group-item-action {% if not request.args.get('category') %}active{% endif %}">
+                        All Categories
+                    </a>
+                    {% for category in categories %}
+                    <a href="{{ url_for('products.catalog', category=category.id) }}" 
+                       class="list-group-item list-group-item-action {% if request.args.get('category')|int == category.id %}active{% endif %}">
+                        {{ category.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product grid -->
+    <div class="col-md-9">
+        <!-- Sort dropdown moved to top right -->
+        <div class="d-flex justify-content-end mb-3">
+            <form id="sort-form" class="w-auto">
+                <select class="form-select" name="sort" onchange="this.form.submit()">
+                    <option value="name" {% if request.args.get('sort') == 'name' %}selected{% endif %}>Sort by: Name</option>
+                    <option value="price_low" {% if request.args.get('sort') == 'price_low' %}selected{% endif %}>Sort by: Price Low to High</option>
+                    <option value="price_high" {% if request.args.get('sort') == 'price_high' %}selected{% endif %}>Sort by: Price High to Low</option>
+                </select>
+            </form>
+        </div>
+
+        {% if products %}
+        <div class="row">
+            {% for product in products %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text text-muted">{{ product.description[:100] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 mb-0">${{ "%.2f"|format(product.price) }}</span>
+                            <span class="badge bg-{{ 'success' if product.stock > 0 else 'danger' }}">
+                                {{ 'In Stock' if product.stock > 0 else 'Out of Stock' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        <div class="d-grid">
+                            <a href="{{ url_for('products.product_detail', id=product.id) }}" 
+                               class="btn btn-primary" target="_blank">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            No products found matching your criteria.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
